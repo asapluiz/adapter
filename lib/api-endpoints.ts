@@ -1,4 +1,5 @@
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+import {Runtime, FunctionUrlAuthType } from "aws-cdk-lib/aws-lambda";
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import path = require('path');
@@ -12,10 +13,10 @@ export class ApiEndpoint extends Construct {
 
     private lambdaFn(lambda_params:LambdaParams){
         let {name, handler, asset_directory} = lambda_params
-        const lambda_function = new lambda.Function(this, name, {
-            runtime: lambda.Runtime.NODEJS_18_X,
+        const lambda_function = new NodejsFunction(this, name, {
+            runtime: Runtime.NODEJS_18_X,
             handler: handler,
-            code: lambda.Code.fromAsset(path.join(__dirname, asset_directory))
+            entry: path.join(__dirname, asset_directory)
         });
         return lambda_function
     }
@@ -24,7 +25,7 @@ export class ApiEndpoint extends Construct {
         return  new apigateway.RestApi(this, name);    
     }
 
-    private createGateway(api:apigateway.RestApi, lambda_fn:lambda.Function, gateway_params:GatewayParams){
+    private createGateway(api:apigateway.RestApi, lambda_fn:NodejsFunction, gateway_params:GatewayParams){
         let {url_string, method} = gateway_params
         const parts = url_string.split('/').filter(part => part !== '');
         let parentResource = api.root;

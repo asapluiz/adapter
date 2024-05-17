@@ -18,8 +18,8 @@ export class CarlaAdapter extends cdk.Stack {
     super(scope, id, props);
     const stage = init_data.stage
     const bucketName = `S3_BUCKET_${stage}`
-    const sqsName = `SQS${stage}`
-    const dbName = `DB${stage}`
+    const sqsName = `SQS_${stage}`
+    const dbName = `DB_${stage}`
 
     // create Bucket
     const bucket = new s3.Bucket(this, bucketName );
@@ -43,8 +43,6 @@ export class CarlaAdapter extends cdk.Stack {
     permissions.set(results_data)
     console.log("qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
 
-
-    //todo_service_function.addEnvironment('TODO_DB_TABLE_NAME', todo_db.tableName);
    
   }
 }
