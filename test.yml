@@ -1,0 +1,740 @@
+openapi: '3.0.2'
+info:
+  title: Simulation Adapter API
+  version: '0.1.0'
+  description: Simulation adapter api
+paths:
+  /infos:
+    get:
+      operationId: 'getSimulatorInfo'
+      description: Return general information about the simulation adapter
+      responses:
+        '200':
+          description: The information about the simulation adapter.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SimulatorInfo'
+
+  /suts:
+    get:
+      operationId: 'listSUTs'
+      description: Returns a list of systems under test (SUTs) available in this simulator.
+      responses:
+        '200':
+          description: A list of SUTs available in this simulator.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SutData'
+        '404':
+          description: SUTs not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error in Simphera
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /suts/{id}:
+    parameters:
+      - name: id
+        description: the id of the simulation
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: testEnvId
+        description: the id of the test environment
+        in: query
+        schema:
+          type: string
+    get:
+      operationId: 'getSUT'
+      description: Returns a systems under test (SUT) available in this simulator.
+      responses:
+        '200':
+          description: A SUT available in this simulator.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SingleSutData'
+        '404':
+          description: SUTs not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error in Simphera
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /suts/{id}/signals:
+    get:
+      operationId: 'listSutSignals'
+      description: Returns a list signlas to a certain system under test.
+      parameters:
+        - name: id
+          description: the id of the sut
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: testEnvId
+          description: the id of the test environment
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of signals of the SUT in the simulator.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Signals'
+        '404':
+          description: SUTs not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Error in Simphera
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /simulations:
+    post:
+      operationId: 'prepareSimulation'
+      description: Start a new simulation
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/InitialSimulationData'
+      responses:
+        '200':
+          description: Scenario preparation done
+          content:
+            'application/json':
+              schema:
+                type: string
+
+  /simulations/{id}:
+    parameters:
+      - name: id
+        description: the id of the simulation
+        required: true
+        in: path
+        schema:
+          type: string
+    get:
+      operationId: 'getSimulation'
+      description: Return current state of the simulation
+      responses:
+        '200':
+          description: A simulation.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Simulation'
+    put:
+      operationId: 'abortSimulation'
+      description: Abort the simulation
+      responses:
+        '204':
+          description: Aborted successfully
+        '403':
+          description: Simulation cannot be aborted
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Simulation not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /simulations/{id}/scenarios/{scenarioId}/execute:
+    parameters:
+      - name: id
+        description: the id of the simulation
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: scenarioId
+        description: the id of the simulatable scenario
+        required: true
+        in: path
+        schema:
+          type: string
+    post:
+      operationId: 'simulateScenario'
+      description: simulate scenario
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/SimulationScenarioConfiguration'
+      responses:
+        '201':
+          description: The id of the simulation result.
+          content:
+            'application/json':
+              schema:
+                type: string
+
+  /simulations/{id}/scenarios/{scenarioId}/results/{resultId}:
+    parameters:
+      - name: id
+        description: the id of the simulation
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: scenarioId
+        description: the id of the simulatable scenario
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: resultId
+        description: the id of the simulation result
+        required: true
+        in: path
+        schema:
+          type: string
+    get:
+      operationId: 'getSimulationResult'
+      description: Return simulation result
+      responses:
+        '200':
+          description: The simulation result
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SimulationResult'
+        '404':
+          description: Simulation result not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '5XX':
+          description: Unexpected error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /simulations/{id}/scenarios/{scenarioId}/results/{resultId}/trace:
+    parameters:
+      - name: id
+        description: the id of the simulation
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: scenarioId
+        description: the id of the simulatable scenario
+        required: true
+        in: path
+        schema:
+          type: string
+      - name: resultId
+        description: the id of the simulation result
+        required: true
+        in: path
+        schema:
+          type: string
+    get:
+      operationId: 'getSimulationTrace'
+      description: Download the trace file for the simulation
+      responses:
+        '200':
+          description: The binary trace file
+          content:
+            'application/octet-stream':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Simulation trace not found
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '5XX':
+          description: Unexpected error
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+components:
+  schemas:
+    SimulatorInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        numberOfParallelExecutions:
+          type: integer
+          minimum: 1
+        requiresTestEnvironments:
+          type: boolean
+      required:
+        - name
+        - version
+        - numberOfParallelExecutions
+        - requiresTestEnvironments
+
+    SutData:
+      type: object
+      properties:
+        suts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sut'
+        testEnvironments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestEnvironment'
+      required:
+        - suts
+
+    SingleSutData:
+      type: object
+      properties:
+        sut:
+          $ref: '#/components/schemas/Sut'
+        testEnvironment:
+          $ref: '#/components/schemas/TestEnvironment'
+      required:
+        - sut
+
+    Sut:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        lastModified:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - created
+        - lastModified
+
+    TestEnvironment:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        lastModified:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - created
+        - lastModified
+
+    SimulationScenarioConfiguration:
+      type: object
+      properties:
+        road:
+          type: string
+        environment:
+          $ref: '#/components/schemas/EnvironmentConfiguration'
+        oddParameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/OddParameter'
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScenarioParameter'
+      required:
+        - road
+        - parameters
+        - oddParameters
+
+    OddParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+      required:
+        - name
+        - value
+
+    EnvironmentConfiguration:
+      type: object
+      properties:
+        visibility:
+          type: number
+        brightness:
+          type: number
+        cloudState:
+          type: number
+        potholes:
+          type: number
+        precipitation:
+          type: number
+        timeOfDay:
+          type: number
+
+    ScenarioParameter:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        lower:
+          $ref: '#/components/schemas/IntervalBound'
+        upper:
+          $ref: '#/components/schemas/IntervalBound'
+        unit:
+          type: string
+      required:
+        - name
+        - type
+        - id
+        - lower
+        - upper
+        - unit
+
+    IntervalBound:
+      type: string
+      pattern: '^(?:-?\d+\.?\d*)|\*$'
+
+    Signals:
+      type: array
+      items:
+        $ref: '#/components/schemas/Signal'
+
+    Signal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    Simulation:
+      type: object
+      properties:
+        id:
+          type: string
+        sutId:
+          type: string
+        testEnvironmentId:
+          type: string
+        createdBy:
+          type: string
+        simulationName:
+          type: string
+        scenarioData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimulationScenario'
+        recordSignals:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - sutId
+        - scenarioData
+        - recordSignals
+
+    SimulationResult:
+      type: object
+      properties:
+        id:
+          type: string
+        state:
+          type: string
+          enum:
+            - PROCESSING
+            - FINISHED
+            - ABORTED
+            - ERROR
+            - PENDING
+        weaknessScore:
+          type: number
+        started:
+          type: string
+          format: date-time
+        finished:
+          type: string
+          format: date-time
+        errorReason:
+          type: string
+        extraData:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResultData'
+        rtcFailure:
+          $ref: '#/components/schemas/RTCFailure'
+        rtcValues:
+          $ref: '#/components/schemas/RtcSimulationRunInterpretation'
+      required:
+        - id
+        - state
+
+    ResultData:
+      oneOf:
+        - $ref: '#/components/schemas/DebugUiResultData'
+        - $ref: '#/components/schemas/VideoResultData'
+
+    DebugUiResultData:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - DEBUG_UI
+        debugLink:
+          type: string
+
+    VideoResultData:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - VIDEO
+        videoUrl:
+          type: string
+
+    InitialSimulationData:
+      type: object
+      properties:
+        sutId:
+          type: string
+        testEnvironmentId:
+          type: string
+        createdBy:
+          type: string
+        simulationName:
+          type: string
+        scenarioData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimulationScenario'
+        recordSignals:
+          type: array
+          items:
+            type: string
+      required:
+        - sutId
+        - scenarioData
+        - recordSignals
+
+    SimulationScenario:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - content
+        - name
+        - description
+
+    RTCFailure:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/RtcFailureReason'
+      required:
+        - timestamp
+        - reasons
+
+    RtcFailureReason:
+      type: object
+      properties:
+        phaseName:
+          type: string
+        phaseId:
+          type: string
+        reasonType:
+          type: string
+        textualDescription:
+          type: string
+      required:
+        - reasonType
+        - textualDescription
+
+    RtcSimulationRunInterpretation:
+      type: object
+      properties:
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/RtcPhaseObservationInterpretation'
+        constraints:
+          $ref: '#/components/schemas/RtcConstraintEvaluationMap'
+        coverage:
+          type: boolean
+      required:
+        - phases
+        - constraints
+        - coverage
+
+    RtcConstraintEvaluationMap:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/RtcConstraintEvaluation'
+    RtcConstraintEvaluation:
+      type: object
+      properties:
+        constraintId:
+          type: string
+        startTime:
+          type: number
+        endTime:
+          type: number
+        maximalObservedValue:
+          type: number
+        minimalObservedValue:
+          type: number
+        fulfillmentType:
+          $ref: '#/components/schemas/FulfillmentType'
+      required:
+        - constraintId
+        - startTime
+        - endTime
+        - maximalObservedValue
+        - minimalObservedValue
+        - fulfillmentType
+
+    RtcPhaseObservationInterpretation:
+      type: object
+      properties:
+        phaseName:
+          type: string
+        phaseId:
+          type: string
+        startTime:
+          type: number
+        endTime:
+          type: number
+        constraints:
+          $ref: '#/components/schemas/RtcConstraintEvaluationMap'
+      required:
+        - startTime
+        - endTime
+        - constraints
+
+    FulfillmentType:
+      type: string
+      enum:
+        - FULFILLED
+        - FULFILLED_DUE_TO_TOLERANCE
+        - FULFILLED_DUE_TO_CONVEX_HULL_EVALUATION
+        - VIOLATED
+        - UNKNOWN
+
+    ApiError:
+      type: object
+      properties:
+        cause:
+          type: string
+        code:
+          type: integer
+          format: int32
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiPartialError'
+        message:
+          type: string
+        requestId:
+          type: string
+        status:
+          type: string
+      required:
+        - code
+        - errors
+        - message
+        - requestId
+        - status
+
+    ApiPartialError:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        detail:
+          type: string
+          nullable: true
+        message:
+          type: string
+        status:
+          type: string
+      required:
+        - code
+        - message
+        - status
+
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      scheme: bearer
+      name: Authorization
+      in: header
+
+security:
+  - Bearer: []
