@@ -4,7 +4,6 @@ export type ValidationResult = {
     errors?: string[];
 }
 
-
 export type simulationsData = {
     sutId:string;
     createdBy:string;
@@ -19,5 +18,7 @@ export type ScenarioData = {
     name: string;
     description:string;
 }
+
+
 
 

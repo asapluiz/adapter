@@ -18,9 +18,9 @@ class SchemaValidator<T> {
     const valid = validate(data);
 
     if(!valid){
-      const errors:string[] = validate.errors?.map(error => `${error.instancePath} ${error.message}`).filter(Boolean) || []
-      const newErrors = this.listErrors(errors)
-       throw new ApiError('Validation Error', 'one or more input field have invalid data', 400, "Bad request", "", newErrors)
+      const errors:string[] = validate.errors?.map(error => `${error.instancePath} ${error.message}`).filter(Boolean) || [];
+      const newErrors = this.listErrors(errors);
+      throw new ApiError('Validation Error', 'one or more input field have invalid data', 400, "Bad request", "", newErrors);
     }
   }
 

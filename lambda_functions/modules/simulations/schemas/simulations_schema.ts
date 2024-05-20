@@ -1,5 +1,5 @@
 import { JSONSchemaType } from 'ajv';
-import { simulationsData, ScenarioData } from '../types/simulations_types';
+import { simulationsData, ScenarioData } from '../simulations_types';
 
 
 const scenarioData: JSONSchemaType<ScenarioData> = {
