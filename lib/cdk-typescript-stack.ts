@@ -34,14 +34,14 @@ export class CarlaAdapter extends cdk.Stack {
 
     });
 
-    console.log(init_data, "11............................................")
+    
     const api_endpoint = new ApiEndpoint(this, "apiEnpoint")
     const results_data = api_endpoint.generate(init_data)
-    console.log(results_data, "22.........................................")
+    
 
     const permissions = new Permissions(bucket, queue, dynamo_db)
     permissions.set(results_data)
-    console.log("qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
+
 
    
   }

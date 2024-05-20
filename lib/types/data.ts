@@ -6,7 +6,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"infos",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/infos/index.ts'
+                asset_directory: '../lambda_functions/routes/infos/index.ts'
             },
     
             gateway_params: {
@@ -27,7 +27,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"suts",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/suts/index.ts'
+                asset_directory: '../lambda_functions/routes/suts/index.ts'
             },
     
             gateway_params: {
@@ -48,7 +48,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"suts_id",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/suts_id/index.ts'
+                asset_directory: '../lambda_functions/routes/suts_id/index.ts'
             },
     
             gateway_params: {
@@ -69,7 +69,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"suts_id_signals",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/suts_id_signals/index.ts'
+                asset_directory: '../lambda_functions/routes/suts_id_signals/index.ts'
             },
     
             gateway_params: {
@@ -89,14 +89,13 @@ export const init_data:InitData =  {
         {
             lambda_params: {
                 name:"simulations",
-                handler:"index.handler",
-                asset_directory: '../lambda_functions/simulations/index.ts'
+                handler:"index.wrappedHandler",
+                asset_directory: '../lambda_functions/routes/simulations/index.ts'
             },
     
             gateway_params: {
                 url_string: '/simulations',
-                method:"ANY", 
-                
+                method:"ANY",   
             },
     
             results: {
@@ -111,7 +110,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"simulations_id",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/simulations_id/index.ts'
+                asset_directory: '../lambda_functions/routes/simulations_id/index.ts'
             },
     
             gateway_params: {
@@ -132,7 +131,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"simulations_id_scenarioid",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/simulations_id_scenarioid/index.ts'
+                asset_directory: '../lambda_functions/routes/simulations_id_scenarioid/index.ts'
             },
     
             gateway_params: {
@@ -153,7 +152,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"simulations_id_scenarioid_resultid",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/simulations_id_scenarioid_resultid/index.ts'
+                asset_directory: '../lambda_functions/routes/simulations_id_scenarioid_resultid/index.ts'
             },
     
             gateway_params: {
@@ -174,7 +173,7 @@ export const init_data:InitData =  {
             lambda_params: {
                 name:"simulations_id_scenarioid_resultid_trace",
                 handler:"index.handler",
-                asset_directory: '../lambda_functions/simulations_id_scenarioid_resultid_trace/index.ts'
+                asset_directory: '../lambda_functions/routes/simulations_id_scenarioid_resultid_trace/index.ts'
             },
     
             gateway_params: {
