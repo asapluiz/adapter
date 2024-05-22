@@ -15,3 +15,10 @@ export const dummy_sut_data = {
     "signals": ["Ego_ttc", "fellow_speed"]
 
 }
+
+export const dummy_info_data = {
+    "name": "test info",
+    "numberOfParallelExecutions": 3,
+    "version": "1",
+    "requiresTestEnvironments": true
+}

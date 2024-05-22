@@ -3,8 +3,6 @@ import SchemaValidator, {validateId} from "../../validation/validator";
 import { SutData } from "./sut_types";
 
 export class SutController{
-
-
     constructor(private sut_service: SutService){}
     
     public async addSuts<T>(sut_data:T, validator:SchemaValidator<T>){
