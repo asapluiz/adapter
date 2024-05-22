@@ -5,7 +5,7 @@ import { SutController} from '../../modules/suts/sut_controller';
 import { SutService } from '../../modules/suts/sut_service';
 import { dummy_sut_data } from '../../test/dummy_data';
 import { SutData } from '../../modules/suts/sut_types';
-import addSutDataSchema from './schemas/add_sut_data_schema';
+import addSutDataSchema from '../../modules/suts/schemas/add_sut_data_schema';
 import SchemaValidator from '../../validation/validator';
 
 

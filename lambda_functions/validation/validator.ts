@@ -40,3 +40,17 @@ class SchemaValidator<T> {
 
 
 export default SchemaValidator;
+
+
+export function validateId(){
+
+  const idSchema: JSONSchemaType<{id:string}> = {
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: "uuid" },
+    },
+    required: ['id'],
+    additionalProperties: false,
+  }
+  return new SchemaValidator(idSchema)
+}

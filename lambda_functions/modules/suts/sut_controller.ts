@@ -1,7 +1,6 @@
 import { SutService } from "./sut_service";
-import SchemaValidator from "../../validation/validator";
+import SchemaValidator, {validateId} from "../../validation/validator";
 import { SutData } from "./sut_types";
-import { ApiError } from "../../error_handler/error_handler";
 
 export class SutController{
 
@@ -35,9 +34,7 @@ export class SutController{
     }
 
     public async getSutById(sut_id:string){
-        if(!sut_id){
-            throw new ApiError({message:'invalid Sut Id', code:400, status:'Bad request'})
-        }
+        await validateId().validate({id:sut_id})
 
         const sut_data = await this.sut_service.getSingleSutData(sut_id);
         const {id, name, description, created, last_modified  } = sut_data
@@ -45,6 +42,23 @@ export class SutController{
         return {
             statusCode: 200,
             body: JSON.stringify({id, name, description, created, lastModified:last_modified})
+        }
+    }
+
+    public async getSutSignals(sut_id:string){
+        await validateId().validate({id:sut_id})
+
+        const sut_signals = await this.sut_service.retrieveSutSignalData(sut_id);
+
+
+        const transformedSignalData = sut_signals.map((item)=>{
+            const {id, name} = item
+            return {id, name}
+        })
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(transformedSignalData)
         }
     }
 }

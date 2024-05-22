@@ -1,7 +1,6 @@
-import SchemaValidator from "../../validation/validator";
+import SchemaValidator, {validateId} from "../../validation/validator";
 import { SimulationService } from "./simulations_service";
 import { simulationsData } from "./simulations_types";
-import { ApiError } from "../../error_handler/error_handler";
 
 
 export class SimulationController {
@@ -19,9 +18,8 @@ export class SimulationController {
     }
 
     public async getSimulationExecutionById(simulation_execution_id:string){
-        if(!simulation_execution_id){
-            throw new ApiError({message:'invalid simulation Id', code:400, status:'Bad request'})
-        }
+        await validateId().validate({id:simulation_execution_id})
+        
         const simulation_execution_data = await this.simulation_service.getSimulationExecutionData(simulation_execution_id)
         const { sk, pk, created_by, name, scenario_data, record_signals } = simulation_execution_data
         return {
@@ -39,9 +37,7 @@ export class SimulationController {
     }
 
     public async abortSimulationExecutionById(simulation_execution_id:string){
-        if(!simulation_execution_id){
-            throw new ApiError({message:'invalid simulation Id', code:400, status:'Bad request'})
-        }
+        await validateId().validate({id:simulation_execution_id})
 
         return {
             statusCode: 200,

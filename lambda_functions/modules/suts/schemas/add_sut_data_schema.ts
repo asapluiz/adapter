@@ -1,11 +1,10 @@
 import { JSONSchemaType } from 'ajv';
-import { SutData } from '../../../modules/suts/sut_types';
+import { SutData } from '../sut_types';
 
 
 const addSutDataSchema: JSONSchemaType<SutData> = {
   type: 'object',
   properties: {
-    id: { type: 'string', format: "uuid" },
     name: { type: 'string' },
     description: { type: 'string' },
     signals:{
@@ -13,7 +12,7 @@ const addSutDataSchema: JSONSchemaType<SutData> = {
       items:  {type: "string"}
     }
   },
-  required: ['id', 'name', 'description'],
+  required: ['name', 'description'],
   additionalProperties: false,
 }
 

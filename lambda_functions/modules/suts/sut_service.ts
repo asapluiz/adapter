@@ -1,6 +1,6 @@
 import * as AWS from 'aws-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import { SutData, SutDbData } from "./sut_types";
+import { SutData, SutDbData, SignalDbData } from "./sut_types";
 import { ApiError } from '../../error_handler/error_handler';
 
 
@@ -106,5 +106,28 @@ export class SutService{
             throw new ApiError({message:'SUT not found', code:404, status:'Not Found'})
           }
           return data.Item as SutDbData
+    }
+
+    public async retrieveSutSignalData(sut_id:string){
+        const partition_key = `sut#${sut_id}`;
+        const sort_key_prefix = 'signal#';
+
+        const params = {
+            TableName: this.tableName,
+            KeyConditionExpression: '#pk = :pkValue AND begins_with(#sk, :skPrefix)',
+            ExpressionAttributeNames: {
+              '#pk': 'pk', 
+              '#sk': 'sk'  
+            },
+            ExpressionAttributeValues: {
+              ':pkValue': partition_key,
+              ':skPrefix': sort_key_prefix
+            }
+        };
+
+        const result = await this.dynamoDb.query(params).promise();
+        
+        return result.Items as SignalDbData[]
+
     }
 }
