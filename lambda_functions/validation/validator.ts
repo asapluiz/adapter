@@ -13,14 +13,14 @@ class SchemaValidator<T> {
     this.schema = schema;
   }
 
-  validate(data: T): void | never {
-    const validate = this.ajv.compile(this.schema);
-    const valid = validate(data);
+  public async validate(data: T): Promise<void | never> {
+    const validate = await this.ajv.compile(this.schema);
+    const valid = await validate(data);
 
     if(!valid){
       const errors:string[] = validate.errors?.map(error => `${error.instancePath} ${error.message}`).filter(Boolean) || [];
       const newErrors = this.listErrors(errors);
-      throw new ApiError('Validation Error', 'one or more input field have invalid data', 400, "Bad request", "", newErrors);
+      throw new ApiError({message:'Validation Error', code:400, status:'Bad request', errors:newErrors});
     }
   }
 

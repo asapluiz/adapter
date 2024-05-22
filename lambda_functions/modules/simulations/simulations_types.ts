@@ -11,6 +11,14 @@ export type simulationsData = {
     scenarioData:ScenarioData[];
     recordSignals: string[];
 }
+export type SimulationExecutionDbData = {
+    "sk": string;
+    "scenario_data":ScenarioData; 
+    "record_signals": string[];
+    "pk": string;
+    "name": string;
+    "created_by": string 
+}
 
 export type ScenarioData = {
     id:string;

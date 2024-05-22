@@ -1,17 +1,22 @@
-import { ApiPartialError, ApiErrorType } from "../types/error_types"
+import { ApiPartialError, ApiErrorInput, ApiErrorOutput } from "../types/error_types"
 
 export class ApiError extends Error {
-    constructor(
-        message:string = "unknown Error", 
-        public cause:string = "",
-        public code:number = 500,
-        public status:string = "Internal Error",
-        public requestId:string = "",
-        public errors:ApiPartialError[] = [],
-        
-    ){
-        super(message)
+    public cause:string 
+    public requestId:string 
+    public code:number 
+    public status:string 
+    public errors:ApiPartialError[] 
+
+
+    constructor(error_input:ApiErrorInput){
+        super(error_input.message?? "unknown Error")
         Object.setPrototypeOf(this, ApiError.prototype)
+
+        this.cause = error_input.cause?? '';
+        this.requestId = error_input.requestId?? '';
+        this.code = error_input.code?? 500;
+        this.status = error_input.status?? 'Internal Error';
+        this.errors = error_input.errors?? [];   
     }
 
 
@@ -19,7 +24,7 @@ export class ApiError extends Error {
         this.errors.push(error)
     }
 
-    toJSON():ApiErrorType{
+    toJSON():ApiErrorOutput{
         return {
             cause: this.cause, 
             code: this.code,

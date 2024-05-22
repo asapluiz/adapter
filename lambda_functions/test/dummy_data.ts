@@ -8,3 +8,11 @@ export const dummy_simulation_data = {
     ],
     "recordSignals": ["signal1", "signal2"]
 }
+
+export const dummy_sut_data = {
+    "id" : "a3364444-73dd-4095-962a-eff1bad63111",
+    "name": "Giant Sut",
+    "description": "this is the best sut in the market",
+    "signals": ["Ego_ttc", "fellow_speed"]
+
+}
