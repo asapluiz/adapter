@@ -18,8 +18,8 @@ export class CarlaAdapter extends cdk.Stack {
     super(scope, id, props);
     const stage = init_data.stage
     const bucketName = `S3_BUCKET_${stage}`
-    const sqsName = `SQS${stage}`
-    const dbName = `DB${stage}`
+    const sqsName = `SQS_${stage}`
+    const dbName = `DB_${stage}`
 
     // create Bucket
     const bucket = new s3.Bucket(this, bucketName );
@@ -34,17 +34,15 @@ export class CarlaAdapter extends cdk.Stack {
 
     });
 
-    console.log(init_data, "11............................................")
+    
     const api_endpoint = new ApiEndpoint(this, "apiEnpoint")
     const results_data = api_endpoint.generate(init_data)
-    console.log(results_data, "22.........................................")
+    
 
     const permissions = new Permissions(bucket, queue, dynamo_db)
     permissions.set(results_data)
-    console.log("qwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww")
 
 
-    //todo_service_function.addEnvironment('TODO_DB_TABLE_NAME', todo_db.tableName);
    
   }
 }

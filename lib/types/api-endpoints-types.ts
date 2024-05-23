@@ -1,8 +1,9 @@
-import * as lambda from 'aws-cdk-lib/aws-lambda';
+// import * as lambda from 'aws-cdk-lib/aws-lambda';
+import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 
 
-export type ApiMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' ;
+export type ApiMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'ANY';
 export type ResourceToAccess = 'db' | 'queue' | 'bucket'
 
 export type GatewayParams = {
@@ -17,7 +18,7 @@ export type LambdaParams = {
 }
 
 export type Results = {
-    lambda_fn:  lambda.Function | null
+    lambda_fn:  NodejsFunction | null
     endpoint: apigateway.IResource | null
 }
 
