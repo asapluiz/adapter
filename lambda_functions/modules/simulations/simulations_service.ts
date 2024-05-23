@@ -6,7 +6,8 @@ import {
   SimulationExecutionDbData, 
   SimulationScenarioConfiguration, 
   PathParamsIds,
-  QueueData 
+  QueueData,
+  SimulationRunDbData 
 } from "./simulations_types";
 import { ApiError } from '../../error_handler/error_handler';
 
@@ -82,6 +83,35 @@ export class SimulationService{
         return simulation_run_id
     }
 
+    public async updateSimulationRunResult(ids:PathParamsIds, data:SimulationRunDbData){
+      const sut_id = SUTID
+      let updateExpression = 'SET';
+      const expressionAttributeNames:any = {};
+      const expressionAttributeValues:any = {};
+
+      for (const [key, value] of Object.entries(data)) {
+        updateExpression += ` #${key} = :${key},`;
+        expressionAttributeNames[`#${key}`] = key;
+        expressionAttributeValues[`:${key}`] = value;
+      }
+      updateExpression = updateExpression.slice(0, -1);
+
+      const params = {
+        TableName: this.tableName,
+        Key: { 
+          pk: `sut#${sut_id}`,
+          sk: `simulationexecution#${ids.simulation_execution_id}#simulationrun#${ids.result_id}`
+         },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeNames: expressionAttributeNames,
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: 'ALL_NEW'
+      };
+
+      const result = await this.dynamoDb.update(params).promise();
+      return result
+    }
+
     public async pushToQueue(data:QueueData){
 
       const duplication_id = Md5.hashStr(JSON.stringify(data)).toString()
@@ -95,12 +125,85 @@ export class SimulationService{
       await this.sqs.sendMessage(params).promise()
       return duplication_id
     }
-
     
 
+    public async retrieveSimulationRunResults(ids:PathParamsIds){
+      let sut_id = SUTID
+
+      const params = {
+        TableName: this.tableName,
+        Key:{
+          pk: `sut#${sut_id}`,
+          sk: `simulationexecution#${ids.simulation_execution_id}#simulationrun#${ids.result_id}`
+        }
+      }
+
+      const data = await this.dynamoDb.get(params).promise() 
+
+      if(!data.Item){
+        throw new ApiError({message:'Simulation result not found', code:404, status:'Not Found'})
+      }
+      return data.Item as SimulationRunDbData
+    }
+    
+
+    public async removeQueueItems(id:string){
+      const allMessages = await this.fetchAllQueueMessages();
+
+      if (allMessages.length > 0) {
+        await this.deleteMarkedQueueMessages(allMessages, id);
+      }
+      return 
+    }
+
+    private async fetchAllQueueMessages(): Promise<AWS.SQS.Message[]> {
+      let allMessages: AWS.SQS.Message[] = [];
+      let moreMessagesExist = true;
+    
+      while (moreMessagesExist) {
+        const messages = await this.fetchQueueMessages();
+        if (messages.length > 0) {
+          allMessages = allMessages.concat(messages);
+        }
+        moreMessagesExist = messages.length === 10;
+      }
+    
+      return allMessages;
+    }
+
+    private async fetchQueueMessages(): Promise<AWS.SQS.Message[]> {
+      const params = {
+        QueueUrl: this.queueUrl,
+        MaxNumberOfMessages: 10,
+        VisibilityTimeout: 20,
+        WaitTimeSeconds: 0,
+      };
+    
+      const result = await this.sqs.receiveMessage(params).promise();
+      return result.Messages || [];
+    }
+
+    private async deleteMarkedQueueMessages(messages: AWS.SQS.Message[], id:string) {
+      const deleteParams = {
+        QueueUrl: this.queueUrl,
+        Entries: messages
+          .filter(message => message.Body?.includes(id))
+          .map(message => ({
+            Id: message.MessageId!,
+            ReceiptHandle: message.ReceiptHandle!,
+          })),
+      };
+     
+      if (deleteParams.Entries.length > 0) {
+        await this.sqs.deleteMessageBatch(deleteParams).promise();
+      }
+
+      return
+    }
 
     private async generateUUID(){
       const myuuid = uuidv4();
       return myuuid;
     }
 }
+

@@ -57,10 +57,7 @@ export type ScenarioParameters = {
     unit: string
 }
 
-export type PathParamsIds = {
-    simulation_execution_id:string;
-    scenario_id:string;
-}
+export type PathParamsIds = Record<string, string>
 
 export type QueueData = {
     simulation_run_id: string,
@@ -72,4 +69,71 @@ export type QueueData = {
     odd_parameters: OddParameters[],
     record_signals: string[],
     sut_id: string,
+}
+
+export type SimulationRunDbData = {
+    id:string;
+    state:string;
+    road?: string;
+    environment?: EnvironmentConfiguration;
+    oddParameters?: OddParameters[];
+    parameters?: ScenarioParameters[];
+    scenarioId?: string;
+    weaknessScore?:string;
+    started?:string;
+    finished?:string;
+    errorReason?:string;
+    extraData?: (DebugUiResultData | VideoResultData)[];
+    rtcFailure?: RTCFailure;
+    rtcValues?: RtcSimulationRunInterpretation;
+    traceUrl?: string;
+}
+
+type DebugUiResultData = {
+    type: string;
+    debugLink: string;
+}
+
+type VideoResultData = {
+    type: string;
+    videoUrl: string;
+}
+
+type RTCFailure = {
+    timestamp:number;
+    reasons: RtcFailureReason[]
+}
+
+type RtcFailureReason = {
+    phaseName?:string;
+    phaseId?: string;
+    reasonType:string;
+    textualDescription: string;
+}
+
+type RtcSimulationRunInterpretation = {
+    phases: RtcPhaseObservationInterpretation[];
+    constraints: RtcConstraintEvaluationMap;
+    coverage: boolean;
+}
+
+type RtcPhaseObservationInterpretation = {
+    phaseName?:string;
+    phaseId?: string;
+    startTime: number;
+    endTime: number;
+    constraints:RtcConstraintEvaluationMap; 
+}
+
+type RtcConstraintEvaluationMap = {
+    additionalProperties:RtcConstraintEvaluation;
+}
+
+type RtcConstraintEvaluation = {
+    constraintId:string;
+    startTime:number;
+    endTime:number;
+    maximalObservedValue: number;
+    minimalObservedValue: number;
+    fulfillmentType: string;
 }
