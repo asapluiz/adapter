@@ -188,7 +188,27 @@ export const init_data:InitData =  {
             },
     
             resource_to_access: ["db", "bucket"]
-        }
+        },
+
+        {
+            lambda_params: {
+                name:"simulation_id_resultid_update",
+                handler:"index.wrappedHandler",
+                asset_directory: '../lambda_functions/routes/simulations/simulation_id_resultid_update/index.ts'
+            },
+    
+            gateway_params: {
+                url_string: '/simulations/{id}/results/{resultId}/update',
+                method:"ANY", 
+            },
+    
+            results: {
+                lambda_fn: null,
+                endpoint: null
+            },
+    
+            resource_to_access: ["db"]
+        },
     ]
 }
 

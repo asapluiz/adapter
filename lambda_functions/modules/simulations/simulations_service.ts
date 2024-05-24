@@ -18,6 +18,8 @@ export class SimulationService{
     private queueUrl: string = process.env.QUEUE_URL || ''
     private dynamoDb = new AWS.DynamoDB.DocumentClient();
     private sqs = new AWS.SQS();
+    private bucketName = process.env.BUCKET_NAME || '';
+    private s3 = new AWS.S3();
 
     
 
@@ -199,6 +201,13 @@ export class SimulationService{
       }
 
       return
+    }
+
+    public async retrieveTraceFilefromBucket(ids:PathParamsIds){
+      const trace_file_key = `${ids.result_id}/results/trace.mf4`
+
+      const data = await this.s3.getObject({ Bucket: this.bucketName, Key: trace_file_key }).promise();
+      return data
     }
 
     private async generateUUID(){

@@ -95,13 +95,28 @@ export class SimulationController {
         }
     }
 
+    public async updateSimulationRunResult(ids:PathParamsIds, data:SimulationRunDbData){
+        //validate input data and ids
+
+        await this.simulation_service.updateSimulationRunResult(ids, data)
+        return {
+            statusCode: 204,
+            body: JSON.stringify("simulation result updated successfully")
+        }
+    }
+
     public async getTraceFile(ids:PathParamsIds){
 
-        // const run_result = await this.simulation_service.updateSimulationRunResult(ids, data)
+        const trace_file = await this.simulation_service.retrieveTraceFilefromBucket(ids)
+        
         return {
             statusCode: 200,
-            body: JSON.stringify("run_result")
-        }
+            headers: {
+              'Content-Type': trace_file.ContentType || 'application/octet-stream',
+            },
+            body: trace_file.Body?.toString('base64') || '',
+            isBase64Encoded: true,
+          };
     }
 
 }
