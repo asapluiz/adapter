@@ -31,7 +31,6 @@ export class InfoService{
               sk: 'info'
             }
         }
-    
         const data = await this.dynamoDb.get(params).promise() 
 
         if(!data.Item){
