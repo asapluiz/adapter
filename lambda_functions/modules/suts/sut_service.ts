@@ -11,7 +11,7 @@ export class SutService{
 
     public async saveSutData(data:SutData){
         const sut_id = await this.generateUUID()
-
+        //add all signals and sut with a transaction (they all succeed or all fail) 
         const signals_param = await this.prepareSignalValues(data.signals, sut_id)
         const sut_params:any = [
             {
@@ -24,11 +24,10 @@ export class SutService{
                         name: data.name,
                         description: data.description,
                         created: new Date().toISOString(),
-                        last_modified: new Date().toISOString()
-                    },
-                    ConditioExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)'
+                        lastModified: new Date().toISOString()
+                    }
                 }
-            }
+            } 
         ]
 
         const params ={TransactItems: sut_params.concat(signals_param)} 
@@ -36,6 +35,27 @@ export class SutService{
         return result;
         
     }
+
+    // private async prepareSutDataUniqueFields(fields: (keyof SutData)[], data:SutData, sut_id:string){
+    //     let unique_fields = []
+
+    //     for (let item of fields){
+    //         const unique_field_params = {
+    //             Put:{
+    //                 TableName: this.tableName,
+    //                 Item: {
+    //                     pk: `sut#${sut_id}`,
+    //                     sk: `sut${item}#${data[item]}`,
+    //                     [item]: data[item],
+    //                 },
+    //                 ConditionExpression: 'attribute_not_exists(sk)',
+    //             }
+    
+    //         } 
+    //         unique_fields.push(unique_field_params)
+    //     }
+    //     return unique_fields
+    // }
 
     private async prepareSignalValues(signals:string[], sut_id:string){
         let prepared_signal_params = []
@@ -86,7 +106,7 @@ export class SutService{
         const result = await this.dynamoDb.scan(params).promise();
         
         if(!result.Items || result.Items.length === 0){
-            throw new ApiError({message:'No Sut Found', code:404, status:'Not Found'})
+            throw new ApiError({message:'No Suts Found', code:404, status:'Not Found'})
         }
         return result.Items as SutDbData[]
     }

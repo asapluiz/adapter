@@ -1,13 +1,16 @@
 import { SutService } from "./sut_service";
 import SchemaValidator, {validateId} from "../../validation/validator";
 import { SutData } from "./sut_types";
+import addSutDataSchema from "./schemas/add_sut_data_schema";
 
 export class SutController{
     constructor(private sut_service: SutService){}
     
-    public async addSuts<T>(sut_data:T, validator:SchemaValidator<T>){
+    public async addSuts(sut_data:SutData){
+        const validator = new SchemaValidator(addSutDataSchema)
+
         await validator.validate(sut_data);
-        await this.sut_service.saveSutData(sut_data as SutData)
+        await this.sut_service.saveSutData(sut_data)
 
         return {
             statusCode: 200,
@@ -20,14 +23,14 @@ export class SutController{
         const sut_list = await this.sut_service.listAllSutData()
 
         const transformedSutResultData = sut_list.map((item)=>{
-            const {id, name, description, created, last_modified  } = item
-            return {id, name, description, created, lastModified: last_modified}
+            const {id, name, description, created, lastModified  } = item
+            return {id, name, description, created, lastModified}
         })
         
 
         return {
             statusCode: 200,
-            body: JSON.stringify(transformedSutResultData)
+            body: JSON.stringify({suts:transformedSutResultData})
         }
     }
 
@@ -35,23 +38,23 @@ export class SutController{
         await validateId().validate({id:sut_id})
 
         const sut_data = await this.sut_service.getSingleSutData(sut_id);
-        const {id, name, description, created, last_modified  } = sut_data
+        const {id, name, description, created, lastModified  } = sut_data
         
         return {
             statusCode: 200,
-            body: JSON.stringify({id, name, description, created, lastModified:last_modified})
+            body: JSON.stringify({sut:{id, name, description, created, lastModified}})
         }
     }
 
     public async getSutSignals(sut_id:string){
         await validateId().validate({id:sut_id})
 
+        await this.sut_service.getSingleSutData(sut_id)
         const sut_signals = await this.sut_service.retrieveSutSignalData(sut_id);
 
 
         const transformedSignalData = sut_signals.map((item)=>{
-            const {id, name} = item
-            return {id, name}
+            return {id: item.id, name: item.name}
         })
 
         return {

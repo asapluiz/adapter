@@ -13,7 +13,6 @@ const handler: Handler = async (event: APIGatewayProxyEvent, context:Context): P
 
     if (method === 'GET') { 
         const sut_controller = new SutController(sut_service)
-    
         return await sut_controller.getSutById(pathParams.id?? '')
     }
     else {
