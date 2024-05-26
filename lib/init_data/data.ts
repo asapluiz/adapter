@@ -1,4 +1,4 @@
-import { InitData } from "./api-endpoints-types"
+import { InitData } from "../types/api-endpoints-types"
 export const init_data:InitData =  {
     stage: "dev",
     endpoint_list: [

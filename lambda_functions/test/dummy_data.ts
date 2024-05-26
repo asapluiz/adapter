@@ -13,7 +13,6 @@ export const dummy_sut_data = {
     "name": "Giant Sut",
     "description": "this is the best sut in the market",
     "signals": ["Ego_ttc", "fellow_speed"]
-
 }
 
 export const dummy_info_data = {

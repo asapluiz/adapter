@@ -1,8 +1,9 @@
-import SchemaValidator, {validateId} from "../../validation/validator";
+import SchemaValidator, {validateIds} from "../../validation/validator";
 import { SimulationService } from "./simulations_service";
-import { simulationsData, SimulationScenarioConfiguration, PathParamsIds, SimulationRunDbData } from "./simulations_types";
+import { simulationsData, SimulationScenarioConfiguration, PathParamsIds, SimulationRunDbData, pathSESCids, PathSERids, pathSESCRids } from "./simulations_types";
 import { ApiError } from "../../error_handler/error_handler";
 import simulationScenarioConfigurationSchema from "./schemas/simulation_scenario_configuration_schema";
+import simulationsSchema from "./schemas/simulations_schema";
 
 
 
@@ -10,40 +11,49 @@ export class SimulationController {
     
     constructor(private simulation_service:SimulationService){}
 
-    public async SimulationExecutions<T>(add_simulation_data:T, validator:SchemaValidator<T>){
+    public async SimulationExecutions(add_simulation_data:simulationsData){
+        const validator = new SchemaValidator(simulationsSchema)
         await validator.validate(add_simulation_data)
-        let simulationExecution_id = await this.simulation_service.saveSimulationExecutionData(add_simulation_data as simulationsData)
+        let simulationExecution_id = await this.simulation_service.saveSimulationExecutionData(add_simulation_data)
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ simulationExecution_id })
+            body: JSON.stringify(simulationExecution_id )
         }
     }
 
     public async getSimulationExecutionById(simulation_execution_id:string){
-        await validateId().validate({id:simulation_execution_id})
+        await validateIds([simulation_execution_id])
         
         const simulation_execution_data = await this.simulation_service.getSimulationExecutionData(simulation_execution_id)
-        const { id, pk, created_by, name, scenario_data, record_signals } = simulation_execution_data
+        const { pk, sk, createdBy, name, scenarioData, recordSignals } = simulation_execution_data
         return {
             statusCode: 200,
             body: JSON.stringify({
-                id: id,
+                id: sk.split('#')[1],
                 sutId: pk.split('#')[1],
-                createdBy: created_by,
+                createdBy,
                 simulationName: name,
-                scenarioData: scenario_data, 
-                recordSignals: record_signals
+                scenarioData, 
+                recordSignals
             })
         }
 
     }
 
     public async abortSimulationExecutionById(simulation_execution_id:string){
-        await validateId().validate({id:simulation_execution_id})
-        // implement the abort simulations
+        await validateIds([simulation_execution_id])
         await this.simulation_service.getSimulationExecutionData(simulation_execution_id)
         await this.simulation_service.removeQueueItems(simulation_execution_id)
+
+        // update all simulation run status
+        const all_simulation_execution_runs = await this.simulation_service.getAllSimulationExecutionRuns(simulation_execution_id)
+        for(let run of all_simulation_execution_runs){
+            await this.simulation_service.updateSimulationRunResult({simulation_execution_id, run_id:run.id}, {
+                state:'ABORTED',
+                id: run.id
+            })
+        }
         
 
         return {
@@ -54,16 +64,17 @@ export class SimulationController {
 
 
     public async executeSimulation(
-        ids:PathParamsIds,
+        ids:pathSESCids,
         data:SimulationScenarioConfiguration
-    ){
+    ){ 
+        const {simulation_execution_id, scenario_id} = ids
+        await validateIds([simulation_execution_id, scenario_id])
         const validator = new SchemaValidator(simulationScenarioConfigurationSchema)
         await validator.validate(data)
-        const {simulation_execution_id, scenario_id} = ids
-        //validate the input ids
+        
         const simulation_run_id = await this.simulation_service.saveSimulationRunData(ids, data)
         const simulation_execution_data = await this.simulation_service.getSimulationExecutionData(simulation_execution_id)
-        const single_scenario_data = simulation_execution_data.scenario_data.find(item => item.id === scenario_id)
+        const single_scenario_data = simulation_execution_data.scenarioData.find(item => item.id === scenario_id)
         if(!single_scenario_data){throw new ApiError({message:'scenario Id does not exist', code:404, status:'Not Found'})}
 
         const queue_data = {
@@ -74,10 +85,14 @@ export class SimulationController {
             road: data.road,
             environment_parameters: data.environment,
             odd_parameters: data.oddParameters,
-            record_signals: simulation_execution_data.record_signals,
+            record_signals: simulation_execution_data.recordSignals,
             sut_id: simulation_execution_data.pk.split('#')[1],
         }
         await this.simulation_service.pushToQueue(queue_data)
+        await this.simulation_service.updateSimulationRunResult({simulation_execution_id, run_id:simulation_run_id}, {
+            state:'PROCESSING',
+            id: simulation_run_id
+        })
 
 
         return {
@@ -86,8 +101,9 @@ export class SimulationController {
         }
     }
 
-    public async getSimulationRunResult(ids:PathParamsIds){
-        //validate ids
+    public async getSimulationRunResult(ids:pathSESCRids){
+       const  {simulation_execution_id, scenario_id, run_id} = ids
+        await validateIds([simulation_execution_id, scenario_id, run_id])
         const simulation_run_result = await this.simulation_service.retrieveSimulationRunResults(ids)
         return {
             statusCode: 200,
@@ -95,8 +111,9 @@ export class SimulationController {
         }
     }
 
-    public async updateSimulationRunResult(ids:PathParamsIds, data:SimulationRunDbData){
-        //validate input data and ids
+    public async updateSimulationRunResult(ids:PathSERids, data:SimulationRunDbData){
+        const  {simulation_execution_id, run_id} = ids
+        await validateIds([simulation_execution_id, run_id])
 
         await this.simulation_service.updateSimulationRunResult(ids, data)
         return {

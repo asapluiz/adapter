@@ -42,8 +42,7 @@ class SchemaValidator<T> {
 export default SchemaValidator;
 
 
-export function validateId(){
-
+export async function validateIds(idList:string[]){
   const idSchema: JSONSchemaType<{id:string}> = {
     type: 'object',
     properties: {
@@ -52,5 +51,10 @@ export function validateId(){
     required: ['id'],
     additionalProperties: false,
   }
-  return new SchemaValidator(idSchema)
+
+  for(let id of idList){
+    const validation = new SchemaValidator(idSchema)
+    await validation.validate({id})
+  }
+  return
 }

@@ -1,5 +1,5 @@
 import { SutService } from "./sut_service";
-import SchemaValidator, {validateId} from "../../validation/validator";
+import SchemaValidator, {validateIds} from "../../validation/validator";
 import { SutData } from "./sut_types";
 import addSutDataSchema from "./schemas/add_sut_data_schema";
 
@@ -35,7 +35,7 @@ export class SutController{
     }
 
     public async getSutById(sut_id:string){
-        await validateId().validate({id:sut_id})
+        await validateIds([sut_id])
 
         const sut_data = await this.sut_service.getSingleSutData(sut_id);
         const {id, name, description, created, lastModified  } = sut_data
@@ -47,7 +47,7 @@ export class SutController{
     }
 
     public async getSutSignals(sut_id:string){
-        await validateId().validate({id:sut_id})
+        await validateIds([sut_id])
 
         await this.sut_service.getSingleSutData(sut_id)
         const sut_signals = await this.sut_service.retrieveSutSignalData(sut_id);

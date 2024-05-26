@@ -13,8 +13,8 @@ const handler: Handler = async (event: APIGatewayProxyEvent, context:Context): P
     let simulator_controller = new SimulationController(simulation_service);
     if (method === 'PATCH') {
         return await simulator_controller.updateSimulationRunResult(
-            {simulation_execution_id: pathParams.id??'', result_id: pathParams.resultId??''}, 
-            JSON.parse(event.body??'')
+            {simulation_execution_id: pathParams.id??'', run_id: pathParams.resultId??''}, 
+            JSON.parse(event.body || '{}')
         );
     } else {
         throw new ApiError({message:'invalid method call', code:404, status:'Bad request'})

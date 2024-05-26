@@ -13,11 +13,11 @@ export type simulationsData = {
 }
 export type SimulationExecutionDbData = {
     sk: string;
-    scenario_data:ScenarioData[]; 
-    record_signals: string[];
+    scenarioData:ScenarioData[]; 
+    recordSignals: string[];
     pk: string;
     name: string;
-    created_by: string,
+    createdBy: string,
     id: string; 
 }
 
@@ -136,4 +136,20 @@ type RtcConstraintEvaluation = {
     maximalObservedValue: number;
     minimalObservedValue: number;
     fulfillmentType: string;
+}
+
+export type pathSESCids = {
+    simulation_execution_id: string;
+    scenario_id:string
+}
+
+export type PathSERids = {
+    simulation_execution_id: string;
+    run_id:string
+}
+
+export type pathSESCRids = {
+    simulation_execution_id: string;
+    scenario_id:string;
+    run_id:string
 }

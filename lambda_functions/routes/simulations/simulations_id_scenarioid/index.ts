@@ -15,7 +15,7 @@ const handler: Handler = async (event: APIGatewayProxyEvent, context:Context): P
     if (method === 'POST') {
         return await simulator_controller.executeSimulation(
             {simulation_execution_id: pathParams.id??'', scenario_id:pathParams.scenarioId??''},
-            JSON.parse(event.body?? '')
+            JSON.parse(event.body || '{}')
         );
 
     }else {

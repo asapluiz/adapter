@@ -7,7 +7,8 @@ import {
   SimulationScenarioConfiguration, 
   PathParamsIds,
   QueueData,
-  SimulationRunDbData 
+  SimulationRunDbData,
+  pathSESCids, PathSERids, pathSESCRids 
 } from "./simulations_types";
 import { ApiError } from '../../error_handler/error_handler';
 
@@ -30,11 +31,13 @@ export class SimulationService{
             Item: {
               pk: `sut#${data.sutId}`,
               sk: `simulationexecution#${simulation_execution_id}`,
+              gsi1pk: `simulationexecution#${simulation_execution_id}`,
+              gsi1sk: `simulationexecution#${simulation_execution_id}`,
               id: `${simulation_execution_id}`,
               name: data.simulationName,
-              created_by: data.createdBy,
-              scenario_data: data.scenarioData,
-              record_signals: data.recordSignals
+              createdBy: data.createdBy,
+              scenarioData: data.scenarioData,
+              recordSignals: data.recordSignals
             },
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)'
           };
@@ -44,39 +47,40 @@ export class SimulationService{
     }
 
     public async getSimulationExecutionData(simulation_execution_id:string){
-      let sut_id = SUTID
-
       const params = {
         TableName: this.tableName,
-        Key:{
-          pk: `sut#${sut_id}`,
-          sk: `simulationexecution#${simulation_execution_id}`
+        IndexName:'gsi1',
+        KeyConditionExpression: 'gsi1pk = :gsi1pk AND gsi1sk = :gsi1sk',
+        ExpressionAttributeValues: {
+          ':gsi1pk': `simulationexecution#${simulation_execution_id}`,
+          ':gsi1sk': `simulationexecution#${simulation_execution_id}`
         }
       }
 
-      const data = await this.dynamoDb.get(params).promise() 
+      const data = await this.dynamoDb.query(params).promise() 
 
-      if(!data.Item){
+      if(!data.Items || data.Items.length === 0){
         throw new ApiError({message:'simulation not found', code:404, status:'Not Found'})
       }
-      return data.Item as SimulationExecutionDbData
+      return data.Items[0] as SimulationExecutionDbData
     }
 
-    public async saveSimulationRunData(ids:PathParamsIds, data:SimulationScenarioConfiguration){
-      const sut_id = SUTID
+    public async saveSimulationRunData(ids:pathSESCids, data:SimulationScenarioConfiguration){
       const simulation_run_id = await this.generateUUID()
         const params = {
             TableName: this.tableName,
             Item: {
-              pk: `sut#${sut_id}`,
-              sk: `simulationexecution#${ids.simulation_execution_id}#simulationrun#${simulation_run_id}`,
+              pk: `simulationrun#${simulation_run_id}`,
+              sk: `simulationrun#${simulation_run_id}`,
+              gsi1pk: `simulationexecution#${ids.simulation_execution_id}`,
+              gsi1sk: `simulationrun#${simulation_run_id}`,
               id: `${simulation_run_id}`,
               scenarioId: `${ids.scenario_id}`,
               road: data.road,
               environment: data.environment,
               oddParameters: data.oddParameters,
               parameters: data.parameters,
-              state: 'pending',
+              state: 'PENDING',
             },
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)'
         };
@@ -85,8 +89,24 @@ export class SimulationService{
         return simulation_run_id
     }
 
-    public async updateSimulationRunResult(ids:PathParamsIds, data:SimulationRunDbData){
-      const sut_id = SUTID
+
+    public async getAllSimulationExecutionRuns(simulation_execution_id:string){
+      const params = {
+        TableName: this.tableName,
+        IndexName:'gsi1',
+        KeyConditionExpression: 'gsi1pk = :gsi1pk AND begins_with(gsi1sk, :gsi1skPrefix)',
+        ExpressionAttributeValues: {
+          ':gsi1pk': `simulationexecution#${simulation_execution_id}`,
+          ':gsi1skPrefix': 'simulationrun#'
+        }
+      }
+
+      const data = await this.dynamoDb.query(params).promise()
+
+      return data.Items as SimulationRunDbData[]?? [] 
+    }
+
+    public async updateSimulationRunResult(ids:PathSERids, data:SimulationRunDbData){
       let updateExpression = 'SET';
       const expressionAttributeNames:any = {};
       const expressionAttributeValues:any = {};
@@ -101,13 +121,13 @@ export class SimulationService{
       const params = {
         TableName: this.tableName,
         Key: { 
-          pk: `sut#${sut_id}`,
-          sk: `simulationexecution#${ids.simulation_execution_id}#simulationrun#${ids.result_id}`
+          pk: `simulationrun#${ids.run_id}`,
+          sk: `simulationrun#${ids.run_id}`
          },
         UpdateExpression: updateExpression,
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: 'ALL_NEW'
+        ReturnValues: 'ALL_NEW',
       };
 
       const result = await this.dynamoDb.update(params).promise();
@@ -115,7 +135,6 @@ export class SimulationService{
     }
 
     public async pushToQueue(data:QueueData){
-
       const duplication_id = Md5.hashStr(JSON.stringify(data)).toString()
       const params = {
         MessageBody: JSON.stringify(data), 
@@ -129,23 +148,23 @@ export class SimulationService{
     }
     
 
-    public async retrieveSimulationRunResults(ids:PathParamsIds){
-      let sut_id = SUTID
-
+    public async retrieveSimulationRunResults(ids:pathSESCRids){
       const params = {
         TableName: this.tableName,
-        Key:{
-          pk: `sut#${sut_id}`,
-          sk: `simulationexecution#${ids.simulation_execution_id}#simulationrun#${ids.result_id}`
+        IndexName:'gsi1',
+        KeyConditionExpression: 'gsi1pk = :gsi1pk AND gsi1sk = :gsi1sk',
+        ExpressionAttributeValues: {
+          ':gsi1pk': `simulationexecution#${ids.simulation_execution_id}`,
+          ':gsi1sk': `simulationrun#${ids.run_id}`
         }
       }
 
-      const data = await this.dynamoDb.get(params).promise() 
+      const data = await this.dynamoDb.query(params).promise() 
 
-      if(!data.Item){
-        throw new ApiError({message:'Simulation result not found', code:404, status:'Not Found'})
+      if(!data.Items || data.Items.length === 0){
+        throw new ApiError({message:'simulation not found', code:404, status:'Not Found'})
       }
-      return data.Item as SimulationRunDbData
+      return data.Items[0] as SimulationRunDbData
     }
     
 
@@ -195,9 +214,15 @@ export class SimulationService{
             ReceiptHandle: message.ReceiptHandle!,
           })),
       };
-     
-      if (deleteParams.Entries.length > 0) {
-        await this.sqs.deleteMessageBatch(deleteParams).promise();
+
+      // we can only delete 10 items at a time
+      while(deleteParams.Entries.length !== 0){ 
+        const removedItems = deleteParams.Entries.splice(0, 10);
+
+        await this.sqs.deleteMessageBatch({
+          QueueUrl: this.queueUrl,
+          Entries: removedItems
+        }).promise();
       }
 
       return
