@@ -5,15 +5,13 @@ import {
   simulationsData, 
   SimulationExecutionDbData, 
   SimulationScenarioConfiguration, 
-  PathParamsIds,
   QueueData,
   SimulationRunDbData,
   pathSESCids, PathSERids, pathSESCRids 
 } from "./simulations_types";
 import { ApiError } from '../../error_handler/error_handler';
 
-const SUTID = "a3364909-73dd-4095-962a-eff1bad63545"
-/// come back and get the sut id the right way
+
 export class SimulationService{
     private tableName:string = process.env.DB_NAME || ''
     private queueUrl: string = process.env.QUEUE_URL || ''
@@ -228,9 +226,8 @@ export class SimulationService{
       return
     }
 
-    public async retrieveTraceFilefromBucket(ids:PathParamsIds){
-      const trace_file_key = `${ids.result_id}/results/trace.mf4`
-
+    public async retrieveTraceFilefromBucket(ids:pathSESCRids){
+      const trace_file_key = `${ids.run_id}/results/trace.mf4`
       const data = await this.s3.getObject({ Bucket: this.bucketName, Key: trace_file_key }).promise();
       return data
     }

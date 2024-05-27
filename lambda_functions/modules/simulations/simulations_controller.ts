@@ -1,9 +1,15 @@
 import SchemaValidator, {validateIds} from "../../validation/validator";
 import { SimulationService } from "./simulations_service";
-import { simulationsData, SimulationScenarioConfiguration, PathParamsIds, SimulationRunDbData, pathSESCids, PathSERids, pathSESCRids } from "./simulations_types";
+import { 
+    simulationsData, 
+    SimulationScenarioConfiguration, 
+    SimulationRunDbData, 
+    pathSESCids, PathSERids, pathSESCRids 
+} from "./simulations_types";
 import { ApiError } from "../../error_handler/error_handler";
 import simulationScenarioConfigurationSchema from "./schemas/simulation_scenario_configuration_schema";
 import simulationsSchema from "./schemas/simulations_schema";
+import simulationRunResultSchema from "./schemas/simulation_run_schema";
 
 
 
@@ -115,6 +121,9 @@ export class SimulationController {
         const  {simulation_execution_id, run_id} = ids
         await validateIds([simulation_execution_id, run_id])
 
+        const validation = new SchemaValidator(simulationRunResultSchema)
+        await validation.validate(data)
+
         await this.simulation_service.updateSimulationRunResult(ids, data)
         return {
             statusCode: 204,
@@ -122,7 +131,9 @@ export class SimulationController {
         }
     }
 
-    public async getTraceFile(ids:PathParamsIds){
+    public async getTraceFile(ids:pathSESCRids){
+        const  {simulation_execution_id, run_id, scenario_id} = ids
+        await validateIds([simulation_execution_id, run_id, scenario_id])
 
         const trace_file = await this.simulation_service.retrieveTraceFilefromBucket(ids)
         

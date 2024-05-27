@@ -17,7 +17,7 @@ const handler: Handler = async (event: APIGatewayProxyEvent, context:Context): P
     if (method === 'GET') {
         return await simulator_controller.getTraceFile(
             {simulation_execution_id: pathParams.id??'', scenario_id: pathParams.scenarioId??'',
-            result_id: pathParams.resultId??''}
+            run_id: pathParams.resultId??''}
         );
 
     }else {

@@ -57,8 +57,6 @@ export type ScenarioParameters = {
     unit: string
 }
 
-export type PathParamsIds = Record<string, string>
-
 export type QueueData = {
     simulation_run_id: string,
     simulation_execution_id: string,
@@ -71,15 +69,9 @@ export type QueueData = {
     sut_id: string,
 }
 
-export type SimulationRunDbData = {
-    id:string;
-    state:string;
-    road?: string;
-    environment?: EnvironmentConfiguration;
-    oddParameters?: OddParameters[];
-    parameters?: ScenarioParameters[];
-    scenarioId?: string;
-    weaknessScore?:string;
+export type SimulationRunResultData = {
+    state?:string;
+    weaknessScore?:number;
     started?:string;
     finished?:string;
     errorReason?:string;
@@ -89,35 +81,44 @@ export type SimulationRunDbData = {
     traceUrl?: string;
 }
 
-type DebugUiResultData = {
+export type SimulationRunDbData  = SimulationRunResultData &{
+    id:string;
+    road?: string;
+    environment?: EnvironmentConfiguration;
+    oddParameters?: OddParameters[];
+    parameters?: ScenarioParameters[];
+    scenarioId?: string;
+}
+
+export type DebugUiResultData = {
     type: string;
     debugLink: string;
 }
 
-type VideoResultData = {
+export type VideoResultData = {
     type: string;
     videoUrl: string;
 }
 
-type RTCFailure = {
+export type RTCFailure = {
     timestamp:number;
     reasons: RtcFailureReason[]
 }
 
-type RtcFailureReason = {
+export type RtcFailureReason = {
     phaseName?:string;
     phaseId?: string;
     reasonType:string;
     textualDescription: string;
 }
 
-type RtcSimulationRunInterpretation = {
+export type RtcSimulationRunInterpretation = {
     phases: RtcPhaseObservationInterpretation[];
     constraints: RtcConstraintEvaluationMap;
     coverage: boolean;
 }
 
-type RtcPhaseObservationInterpretation = {
+export type RtcPhaseObservationInterpretation = {
     phaseName?:string;
     phaseId?: string;
     startTime: number;
@@ -125,11 +126,11 @@ type RtcPhaseObservationInterpretation = {
     constraints:RtcConstraintEvaluationMap; 
 }
 
-type RtcConstraintEvaluationMap = {
-    additionalProperties:RtcConstraintEvaluation;
+export type RtcConstraintEvaluationMap = {
+    additionalProperties: RtcConstraintEvaluation;
 }
 
-type RtcConstraintEvaluation = {
+export type RtcConstraintEvaluation = {
     constraintId:string;
     startTime:number;
     endTime:number;
