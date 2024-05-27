@@ -9,16 +9,14 @@ const handler: Handler = async (event: APIGatewayProxyEvent, context:Context): P
     const method = event.httpMethod;
 
     const pathParams = event.pathParameters?? {}
-    
     let simulation_service = new SimulationService()
     let simulator_controller = new SimulationController(simulation_service);
-    if (method === 'POST') {
-        return await simulator_controller.executeSimulation(
-            {simulation_execution_id: pathParams.id??'', scenario_id:pathParams.scenarioId??''},
+    if (method === 'PATCH') {
+        return await simulator_controller.updateSimulationRunResult(
+            {simulation_execution_id: pathParams.id??'', run_id: pathParams.resultId??''}, 
             JSON.parse(event.body || '{}')
         );
-
-    }else {
+    } else {
         throw new ApiError({message:'invalid method call', code:404, status:'Bad request'})
     }  
     

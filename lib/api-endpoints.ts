@@ -3,6 +3,7 @@ import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import { Construct } from 'constructs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import path = require('path');
+import {Duration} from "aws-cdk-lib"
 import { LambdaParams, GatewayParams, EndpointList, Results, InitData } from './types/api-endpoints-types';
 
 export class ApiEndpoint extends Construct {
@@ -11,12 +12,14 @@ export class ApiEndpoint extends Construct {
     }
 
 
-    private lambdaFn(lambda_params:LambdaParams){
+    private lambdaFn(lambda_params:LambdaParams, stage:string){
         let {name, handler, asset_directory} = lambda_params
         const lambda_function = new NodejsFunction(this, name, {
+            functionName: `${stage}_adapter_${name}`,
             runtime: Runtime.NODEJS_18_X,
             handler: handler,
-            entry: path.join(__dirname, asset_directory)
+            entry: path.join(__dirname, asset_directory),
+            timeout: Duration.seconds(300)
         });
         return lambda_function
     }
@@ -43,12 +46,12 @@ export class ApiEndpoint extends Construct {
 
     generate(init_data:InitData){
         const {stage, endpoint_list} = init_data
-        const apiName = `api_${stage}`
+        const apiName = `carla_connect_${stage}_adapter`
         const api = this.api(apiName)
         let updated_endpoint_list:EndpointList = []
 
         for(let endpoint of endpoint_list){
-            const fn = this.lambdaFn(endpoint.lambda_params)
+            const fn = this.lambdaFn(endpoint.lambda_params, stage)
             const url = this.createGateway(api, fn, endpoint.gateway_params)
             let results:Results = {
                 lambda_fn: fn,

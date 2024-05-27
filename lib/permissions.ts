@@ -49,8 +49,7 @@ export class Permissions{
     }
 
     setQueue(fn:lambda.Function){
-        this.queue.grantSendMessages(fn);
-        this.queue.grantPurge(fn)
+        this.queue.grant(fn, 'sqs:*')
         fn.addEnvironment('QUEUE_NAME', this.queue.queueName)
         fn.addEnvironment('QUEUE_URL', this.queue.queueUrl)
     }

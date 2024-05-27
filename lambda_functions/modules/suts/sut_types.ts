@@ -10,7 +10,7 @@ export type SutDbData = {
     name: string; 
     description: string; 
     created:string; 
-    last_modified: string  
+    lastModified: string  
 }
 
 export type SignalDbData = {
